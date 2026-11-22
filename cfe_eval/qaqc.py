@@ -106,7 +106,8 @@ def compute_stats(force: bool = False, progress: bool = True) -> pd.DataFrame:
 # screening rules
 # --------------------------------------------------------------------------
 # Each rule: a threshold, whether a flagged gage is dropped (drop=True) or only
-# marked for inspection (drop=False), and the reason in plain words.
+# marked for inspection (drop=False), and the reason in plain words. By default
+# every rule drops its gages, so the analysis uses only gages that pass all checks.
 # The quality control notebook copies this dictionary so every value can be changed there.
 DEFAULT_RULES = {
     "model_output_invalid": {
@@ -131,18 +132,18 @@ DEFAULT_RULES = {
         "why": "more than this share of observed hours sit in flat lines of 5 days or longer "
                "(regulated releases, ice, or estimated record)"},
     "obs_mostly_dry": {
-        "max_zero_frac": 0.50, "drop": False,
+        "max_zero_frac": 0.50, "drop": True,
         "why": "the observed stream has zero flow more than this share of the time (ephemeral stream); "
                "scores divided by the mean flow become unstable"},
     "sim_mostly_dry": {
-        "max_zero_frac": 0.50, "drop": False,
+        "max_zero_frac": 0.50, "drop": True,
         "why": "a model run has zero flow more than this share of the time"},
     "volume_mismatch": {
-        "min_ratio": 0.1, "max_ratio": 10.0, "drop": False,
+        "min_ratio": 0.1, "max_ratio": 10.0, "drop": True,
         "why": "simulated mean flow is below min_ratio or above max_ratio times the observed mean flow "
                "with all three rain products (not a rain problem: regulation, diversion, wrong area, or model)"},
     "few_observed_events": {
-        "min_events": 13, "drop": False,
+        "min_events": 13, "drop": True,
         "why": "fewer observed events than needed for the larger-flood threshold (13th largest event)"},
 }
 

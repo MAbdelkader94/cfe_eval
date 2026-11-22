@@ -157,8 +157,9 @@ and takes the data from the folder next to the repository, so it runs the same f
 (`~/hpchome/Papers/cfe_evel/cfe_eval/analysis`) and from Argon. Figures go to
 `results/figures/<notebook name>/` as PNG at 300 dpi, with the tables behind them as CSV.
 
-Notebooks 01 and 02 use only the gages kept by notebook 00 (`USE_QAQC = True`); before
-notebook 00 has run they use all gages.
+Notebooks 01 and 02 use only the gages kept by notebook 00 (`USE_QAQC = True`) and stop
+with a message if notebook 00 has not been run. By default every screening rule removes its
+flagged gages; the switches are in section 5 of notebook 00.
 
 Notebook 00 reads the 818 hourly files on its first run. If the IDAS kernel has no
 pyarrow, build that table once on Argon instead:
