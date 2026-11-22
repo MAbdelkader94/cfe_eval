@@ -164,4 +164,24 @@ def write_table(df: pd.DataFrame, name: str) -> None:
 
 
 def read_table(name: str) -> pd.DataFrame:
-    return pd.read_parquet(cfg.TABLES / f"{name}.parquet")
+    """A table of results/tables. Reads the parquet file; falls back to the csv
+    file when parquet cannot be read (for example no pyarrow in the kernel)."""
+    try:
+        return pd.read_parquet(cfg.TABLES / f"{name}.parquet")
+    except (ImportError, FileNotFoundError):
+        df = pd.read_csv(cfg.TABLES / f"{name}.csv", dtype={"gage": str, "site": str, "period": str},
+                         low_memory=False)
+        for c in df.columns:
+            if c.startswith("t_peak") or c in ("start", "end", "window_start", "window_end"):
+                df[c] = pd.to_datetime(df[c], utc=True)
+        return df
+
+
+def qaqc_keep() -> set | None:
+    """Gages kept by the quality control notebook (results/tables/qaqc_sites.csv),
+    or None when that notebook has not been run yet."""
+    f = cfg.TABLES / "qaqc_sites.csv"
+    if not f.exists():
+        return None
+    q = pd.read_csv(f, dtype={"gage": str})
+    return set(q.loc[q["keep"], "gage"])

@@ -118,6 +118,7 @@ by climate type, basin size or state is one `groupby` away.
 
 | Table | One row per | Main columns |
 |---|---|---|
+| `qaqc_stats`, `qaqc_sites.csv` | gage | quality statistics; rule flags, `keep`, `drop_reasons` (written by `analysis/00_qaqc.ipynb`) |
 | `gages` | gage | location, area, radar distance, aridity zone, event threshold, event counts |
 | `continuous_metrics` | gage, product, period | `period_type` (full, season, water_year, season_year, month), `period`, `n_hours`, RMSE, NRMSE_pct, PBIAS_pct, NSE, NNSE, KGE, r |
 | `events_detected` | detected event | `series` (obs or product), start, end, t_peak, peak, rise_h, duration_h, volume_m3, is_larger, season, water_year |
@@ -139,11 +140,46 @@ The 818 gages: Humid 717, Semi-humid 44, Semi-arid 35, Arid 22. To rebuild the f
 python scripts/00_assign_climate.py --gages gages.csv --zones Aridity_zones/AZ.shp
 ```
 
-## Figures
+## Analysis notebooks
 
-`notebooks/01_seasonal_climate_boxplots.ipynb` reads `results/tables` and draws the
-seasonal box plots by climate type (PB, NNSE, NRMSE, CSI, peak error, timing error) for
-the three products. The plotting functions are in `cfe_eval/plots.py`.
+The folder `analysis/` holds one notebook per analysis. They read `results/tables` and
+need only numpy, pandas and matplotlib (plus pyarrow for the first run of notebook 00).
+Run them in this order:
+
+| Notebook | Content | Writes |
+|---|---|---|
+| `00_qaqc.ipynb` | zero flow and other checks of the CFE runs, checks of the USGS record, screening rules, list of gages to keep | `results/tables/qaqc_stats`, `results/tables/qaqc_sites.csv` |
+| `01_long_term.ipynb` | NNSE, KGE, PB, NRMSE: tables, box plots by climate type and season, maps, differences between rain products, water years, basin size | figures |
+| `02_events.ipynb` | POD, FAR, CSI, performance diagram, matched-event errors (peak, timing, time to peak, volume), maps | figures |
+
+Paths need no editing: each notebook finds the repository from the folder it is opened in
+and takes the data from the folder next to the repository, so it runs the same from IDAS
+(`~/hpchome/Papers/cfe_evel/cfe_eval/analysis`) and from Argon. Figures go to
+`results/figures/<notebook name>/` as PNG at 300 dpi, with the tables behind them as CSV.
+
+Notebooks 01 and 02 use only the gages kept by notebook 00 (`USE_QAQC = True`); before
+notebook 00 has run they use all gages.
+
+Notebook 00 reads the 818 hourly files on its first run. If the IDAS kernel has no
+pyarrow, build that table once on Argon instead:
+
+```bash
+REPO=$PWD; source jobs/env.sh
+python scripts/06_qaqc_stats.py
+```
+
+Maps use the Albers Equal Area projection for the conterminous United States (EPSG:5070)
+with the aridity zones in the background. The base map (`static/basemap_albers.json`) is
+already projected and the projection of the gages is written in numpy
+(`cfe_eval/maps.py`), so no GIS library is needed. `scripts/00_build_basemap.py` rebuilds
+the base map from `AZ.shp` and the Natural Earth state borders.
+
+The repository stores the notebooks without their outputs. After running them, `git pull`
+may refuse to update a notebook you changed; `git stash` before the pull (and `git stash
+pop` after it) keeps your version.
+
+`notebooks/01_seasonal_climate_boxplots.ipynb` is the first version of the seasonal
+figures; `analysis/` replaces it.
 
 ## Check
 
