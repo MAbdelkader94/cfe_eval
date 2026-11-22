@@ -13,9 +13,10 @@ export CFE_ENV="${CFE_ENV:-${CFE_DATA_ROOT}/env}"
 if [ -e "${CFE_ENV}" ]; then
     echo "environment already exists: ${CFE_ENV} (delete the folder to rebuild)"
 elif command -v conda >/dev/null 2>&1; then
-    conda create -y -p "${CFE_ENV}" -c conda-forge python=3.11 pip
+    # binary packages from conda-forge: the cluster compiler is too old to build numpy with pip
+    conda create -y -p "${CFE_ENV}" -c conda-forge python=3.11 pip numpy pandas pyarrow numba matplotlib jupyterlab
     eval "$(conda shell.bash hook)" && conda activate "${CFE_ENV}"
-    pip install -r "${REPO}/requirements.txt"
+    pip install --only-binary :all: hydrotools.events
 else
     python3 -c 'import sys; assert sys.version_info >= (3, 10), "python >= 3.10 needed: " + sys.version'
     python3 -m venv "${CFE_ENV}"
