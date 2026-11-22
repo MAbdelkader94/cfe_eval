@@ -15,8 +15,11 @@ export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMBA_NUM_THRE
 
 if [ -f "${CFE_ENV}/bin/activate" ]; then
     source "${CFE_ENV}/bin/activate"                       # venv
-elif [ -d "${CFE_ENV}/conda-meta" ]; then
-    eval "$(conda shell.bash hook 2>/dev/null)" && conda activate "${CFE_ENV}"   # conda prefix
+elif [ -x "${CFE_ENV}/bin/python" ]; then
+    # conda environment: put it first on the PATH. This also works inside batch jobs,
+    # where the conda command itself is often not available.
+    export PATH="${CFE_ENV}/bin:${PATH}"
+    export CONDA_PREFIX="${CFE_ENV}"
 else
     echo "ERROR: python environment not found at ${CFE_ENV}; run: bash jobs/00_setup_env.sh"
     exit 1
