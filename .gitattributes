@@ -1,0 +1,4 @@
+# job and shell scripts must keep Unix line endings, also when cloned on Windows
+* text=auto eol=lf
+*.png binary
+*.parquet binary

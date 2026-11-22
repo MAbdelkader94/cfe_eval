@@ -1,0 +1,29 @@
+#!/bin/bash
+# 01_organize.job - step 1, organize the data package (one task, about 10 minutes)
+# Submit with jobs/submit_all.sh (it sets the log folder, the hold chain and the array range).
+
+#$ -N cfe_01_organize
+#$ -q IFC
+#$ -pe smp 1
+#$ -cwd
+#$ -j y
+#$ -m a
+#$ -r y
+
+REPO="${SGE_O_WORKDIR:-$(pwd)}"
+source "${REPO}/jobs/env.sh"
+cd "${REPO}" || exit 1
+
+[ -f "${REPO}/scripts/01_organize.py" ] || { echo "ERROR: submit from the repository root (script not found in ${REPO})"; exit 1; }
+[ -r "${CFE_DATA_ROOT}/AGU26_QPE_CFE_results.zip" ] || { echo "ERROR: package not readable: ${CFE_DATA_ROOT}/AGU26_QPE_CFE_results.zip"; exit 1; }
+
+echo "Task ${SGE_TASK_ID:-single}  Host: $(hostname)  Slots: ${NSLOTS:-1}"
+echo "Data root: ${CFE_DATA_ROOT}"
+echo "Started: $(date)"
+
+python scripts/01_organize.py 
+STATUS=$?
+
+echo "Finished: $(date)"
+echo "Exit code: ${STATUS}"
+exit ${STATUS}

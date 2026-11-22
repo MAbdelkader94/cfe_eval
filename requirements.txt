@@ -1,0 +1,6 @@
+numpy
+pandas>=2.0
+pyarrow
+hydrotools.events>=2.2
+matplotlib
+jupyterlab

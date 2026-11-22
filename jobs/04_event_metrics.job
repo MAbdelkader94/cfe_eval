@@ -1,0 +1,29 @@
+#!/bin/bash
+# 04_event_metrics.job - step 4, event-based evaluation of matched events (array job)
+# Submit with jobs/submit_all.sh (it sets the log folder, the hold chain and the array range).
+
+#$ -N cfe_04_event_metrics
+#$ -q IFC
+#$ -pe smp 1
+#$ -cwd
+#$ -j y
+#$ -m a
+#$ -r y
+
+REPO="${SGE_O_WORKDIR:-$(pwd)}"
+source "${REPO}/jobs/env.sh"
+cd "${REPO}" || exit 1
+
+[ -f "${REPO}/scripts/04_event_metrics.py" ] || { echo "ERROR: submit from the repository root (script not found in ${REPO})"; exit 1; }
+[ -f "${CFE_DATA_ROOT}/organized/manifest.json" ] || { echo "ERROR: step 1 has not finished: ${CFE_DATA_ROOT}/organized/manifest.json missing"; exit 1; }
+
+echo "Task ${SGE_TASK_ID:-single}  Host: $(hostname)  Slots: ${NSLOTS:-1}"
+echo "Data root: ${CFE_DATA_ROOT}"
+echo "Started: $(date)"
+
+python scripts/04_event_metrics.py --task "${SGE_TASK_ID}" --ntasks "${CFE_NTASKS}"
+STATUS=$?
+
+echo "Finished: $(date)"
+echo "Exit code: ${STATUS}"
+exit ${STATUS}
