@@ -45,7 +45,7 @@ cfe_evel/                            data root (the parent folder of the reposit
   results/
     parts/<step>/<site>.pkl          steps 2 to 4, one file per gage
     tables/                          step 5, the tables to analyse
-    figures/                         notebook figures
+    report/                          figures and tables of the analysis notebooks
   logs/                              job logs
 ```
 
@@ -148,14 +148,40 @@ Run them in this order:
 
 | Notebook | Content | Writes |
 |---|---|---|
-| `00_qaqc.ipynb` | zero flow and other checks of the CFE runs, checks of the USGS record, screening rules, list of gages to keep | `results/tables/qaqc_stats`, `results/tables/qaqc_sites.csv` |
-| `01_long_term.ipynb` | NNSE, KGE, PB, NRMSE: tables, box plots by climate type and season, maps, differences between rain products, water years, basin size | figures |
-| `02_events.ipynb` | POD, FAR, CSI, performance diagram, matched-event errors (peak, timing, time to peak, volume), maps | figures |
+| `00_qaqc.ipynb` | zero flow and other checks of the CFE runs, checks of the USGS record, screening rules, list of gages to keep | `results/tables/qaqc_stats`, `results/tables/qaqc_sites.csv`, `results/report/01_quality_control/` |
+| `01_long_term.ipynb` | NNSE, KGE, PB, NRMSE: tables, box plots by climate type and season, maps, differences between rain products, water years, basin size | `results/report/02_long_term_series/` |
+| `02_events.ipynb` | POD, FAR, CSI, performance diagram, matched-event errors (peak, timing, time to peak, volume), maps | `results/report/03_events/` |
 
 Paths need no editing: each notebook finds the repository from the folder it is opened in
 and takes the data from the folder next to the repository, so it runs the same from IDAS
-(`~/hpchome/Papers/cfe_evel/cfe_eval/analysis`) and from Argon. Figures go to
-`results/figures/<notebook name>/` as PNG at 300 dpi, with the tables behind them as CSV.
+(`~/hpchome/Papers/cfe_evel/cfe_eval/analysis`) and from Argon.
+
+### Where the figures and tables go
+
+Each notebook saves everything it shows in `results/report/`, in one folder per analysis and
+one subfolder per type of analysis:
+
+```
+results/report/
+  01_quality_control/        zero_flow/  model_run_checks/  usgs_checks/  screening/
+  02_long_term_series/       overview_tables/  full_period_by_climate/  by_season_and_climate/
+                             maps/  maps_product_differences/  water_years/  by_basin_size/
+  03_events/                 overview_tables/  performance_diagram/  detection_by_season_and_climate/
+                             detection_maps/  matched_events_by_season_and_climate/
+                             full_period_by_climate/  matched_events_maps/  peak_scatter/
+  01_quality_control.zip  02_long_term_series.zip  03_events.zip
+```
+
+- figures: PNG at 300 dpi (`FORMATS = ("png", "pdf")` in the first cell adds vector files)
+- `<figure name>_data.csv`: the numbers behind that figure
+- tables: CSV
+- `figure_list.csv` in each analysis folder: every figure and table with its caption, in the
+  order of the notebook
+- the zip files pack each analysis folder for download
+
+The code is in `cfe_eval/report.py`. In a notebook, `rep.figure(fig, "folder", "name",
+"caption")` and `rep.table(df, "folder", "name", "caption")` save a new figure or table the
+same way.
 
 Notebooks 01 and 02 use only the gages kept by notebook 00 (`USE_QAQC = True`) and stop
 with a message if notebook 00 has not been run. By default every screening rule removes its
@@ -176,8 +202,9 @@ already projected and the projection of the gages is written in numpy
 the base map from `AZ.shp` and the Natural Earth state borders.
 
 The repository stores the notebooks without their outputs. After running them, `git pull`
-may refuse to update a notebook you changed; `git stash` before the pull (and `git stash
-pop` after it) keeps your version.
+may refuse to update a notebook you ran; `git checkout -- analysis` before the pull puts the
+notebooks back to the stored version (the figures and tables in `results/report` are not
+touched).
 
 `notebooks/01_seasonal_climate_boxplots.ipynb` is the first version of the seasonal
 figures; `analysis/` replaces it.

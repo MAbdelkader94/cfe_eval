@@ -129,6 +129,8 @@ def figure_metric_maps(df, value, title, bounds, colors, labels=None, products=N
                frameon=False, columnspacing=1.2, handletextpad=0.2, title_fontproperties={"weight": "bold"})
     fig.legend(handles=zone_handles(), loc="lower center", bbox_to_anchor=(0.5, 0.0), ncol=4, frameon=False,
                columnspacing=1.6)
+    cols = [c for c in ["gage", "product", "aridity_zone", "lat", "lon", value] if c in df.columns]
+    fig.cfe_data = df.loc[df["product"].isin(products), cols].dropna().sort_values(["product", "gage"]).reset_index(drop=True)
     return fig
 
 

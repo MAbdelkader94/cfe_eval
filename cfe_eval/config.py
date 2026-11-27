@@ -29,7 +29,8 @@ ORGANIZED = DATA_ROOT / "organized"
 RESULTS = Path(os.environ.get("CFE_RESULTS", DATA_ROOT / "results")).resolve()
 PARTS = RESULTS / "parts"            # one file per gage and step (restart safe)
 TABLES = RESULTS / "tables"          # final merged tables
-FIGURES = RESULTS / "figures"
+FIGURES = RESULTS / "figures"        # first version of the figures (notebooks/)
+REPORT = RESULTS / "report"          # figures and tables of the analysis notebooks, one folder per analysis
 CLIMATE_CSV = REPO / "static" / "gage_climate.csv"
 
 # product key -> folder name inside the results package

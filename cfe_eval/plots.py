@@ -25,6 +25,12 @@ SEASON_COLORS = {"Fall": ("#d98a5f", "#f2b89b"), "Winter": ("#1a1ab8", "#9a9af5"
 PRODUCT_COLORS = {"AORC": ("#D55E00", "#f2b48a"), "MRMS_P2": ("#0072B2", "#8cc4e6"), "MRMS_RO": ("#00796b", "#8fd3c8")}
 
 
+def _tidy(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+    """The columns a figure was drawn from, as a plain table (saved next to the figure)."""
+    cols = list(dict.fromkeys(c for c in cols if c in df.columns))
+    return df[cols].dropna().sort_values(cols[:-1]).reset_index(drop=True)
+
+
 def slide_style(base: float = 16.0) -> None:
     """Fonts large enough for a projected slide; all text black."""
     plt.rcParams.update({
@@ -117,6 +123,7 @@ def figure_by_product(df: pd.DataFrame, value: str, ylabel: str, products=None, 
     axes[0].set_ylabel(ylabel)
     fig.supxlabel("Climate type", fontweight="bold", fontsize=plt.rcParams["axes.labelsize"])
     season_legend_top(fig)
+    fig.cfe_data = _tidy(df[df["product"].isin(products)], ["gage", "product", "aridity_zone", "season", value])
     return fig
 
 
@@ -132,6 +139,7 @@ def figure_single(df: pd.DataFrame, value: str, ylabel: str, product: str, ref: 
         ax.set_ylim(*ylim)
     season_legend(ax, loc=legend_loc)
     fig.tight_layout()
+    fig.cfe_data = _tidy(df[df["product"] == product], ["gage", "product", "aridity_zone", "season", value])
     return fig
 
 
@@ -187,6 +195,7 @@ def figure_zone_product(df: pd.DataFrame, value: str, ylabel: str, ref: float | 
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     fig.legend(handles=product_handles(), loc="upper center", ncol=3, frameon=True, fancybox=False,
                edgecolor="black", bbox_to_anchor=(0.5, 1.0))
+    fig.cfe_data = _tidy(df, ["gage", "product", group, value])
     return fig
 
 
